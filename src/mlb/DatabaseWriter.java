@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -168,26 +169,18 @@ public class DatabaseWriter {
         Connection db_connection = DriverManager.getConnection(SQLITEDBPATH + db_filename);
         db_connection.createStatement().execute("PRAGMA foreign_keys = ON;");
         // TODO: Write an SQL statement to insert a new team into a table
-        String sql = "INSERT INTO team(idpk, id, abbr, name, conference, division, logo) VALUES (?, ?, ?, ?, ?, ?, ?);";
+        String sql = "INSERT INTO team(id, abbr, name, conference, division, logo) VALUES (?, ?, ?, ?, ?, ?);";
         for (Team team: league) {
             PreparedStatement statement_prepared = db_connection.prepareStatement(sql);
             // TODO: match parameters of the SQL statement and team id, abbreviation, name, conference, division, and logo
-            //CREATE TABLE team ("
-//                            + "idpk INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,"
-//                            + "id TEXT NOT NULL,"
-//                            + "abbr TEXT NOT NULL,"
-//                            + "name TEXT NOT NULL,"
-//                            + "conference TEXT NOT NULL,"
-//                            + "division TEXT NOT NULL,"
-//                            + "logo BLOB);
-            statement_prepared.setString(2, team.getId());
-            statement_prepared.setString(3, team.getAbbreviation());
-            statement_prepared.setString(4, team.getName());
-            statement_prepared.setString(5, team.getConference());
-            statement_prepared.setString(6, team.getDivision());
-            statement_prepared.setBytes(7, team.getLogo());
-            statement_prepared.addBatch();
+            statement_prepared.setString(1, team.getId());
+            statement_prepared.setString(2, team.getAbbreviation());
+            statement_prepared.setString(3, team.getName());
+            statement_prepared.setString(4, team.getConference());
+            statement_prepared.setString(5, team.getDivision());
+            statement_prepared.setBytes(6, team.getLogo());
             statement_prepared.executeUpdate();
+            statement_prepared.close();
         }
         
         db_connection.close();
@@ -202,10 +195,29 @@ public class DatabaseWriter {
         db_connection.createStatement().execute("PRAGMA foreign_keys = ON;");
         for (Address address: addressBook) {
             // TODO: Write an SQL statement to insert a new address into a table
-            String sql = "";
+            //Get team id 
+            Team team = new Team(); 
+            
+            Statement statement = db_connection.createStatement();
+            ResultSet results = statement.executeQuery("SELECT idpk FROM team WHERE team.name= '" + address.getTeam() + "';");
+            int team_id = results.getInt(1); 
+            statement.close();
+            
+            String sql = "INSERT INTO address(team, site, street, city, state, zip, phone, url) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
             PreparedStatement statement_prepared = db_connection.prepareStatement(sql);
             // TODO: match parameters of the SQL statement and address site, street, city, state, zip, phone, and url
+            statement_prepared.setInt(1, team_id); //TODO GET TEAM ID
+            statement_prepared.setString(2, address.getSite()); 
+            statement_prepared.setString(3, address.getStreet()); 
+            statement_prepared.setString(4, address.getCity()); 
+            statement_prepared.setString(5, address.getState()); 
+            statement_prepared.setString(6, address.getZip()); 
+            statement_prepared.setString(7, address.getPhone());
+            statement_prepared.setString(8, address.getUrl());
+                    
+            
             statement_prepared.executeUpdate();
+            statement_prepared.close();
         }
         
         db_connection.close();
@@ -220,13 +232,32 @@ public class DatabaseWriter {
         db_connection.createStatement().execute("PRAGMA foreign_keys = ON;");
         for (Player player: roster) {
             // TODO: Write an SQL statement to insert a new player into a table
-            //Insert into PLAYER() VALUES (SELECT FROM team WHERE ...)
-            String sql = "";
+            //Find team fk
+            Statement statement = db_connection.createStatement();
+            ResultSet results = statement.executeQuery("SELECT idpk FROM team WHERE team.name= '" + player.getTeam() + "';");
+            int team_id = results.getInt(1); 
+            statement.close();
+           
+            String sql = "INSERT INTO player(id, name, team, position) VALUES (?, ?, ?, ?);";
             PreparedStatement statement_prepared = db_connection.prepareStatement(sql);
             // TODO: match parameters of the SQL statement and player id, name, position
+            statement_prepared.setString(1, player.getId()); 
+            statement_prepared.setString(2, player.getName());
+            statement_prepared.setInt(3, team_id);
+            statement_prepared.setString(4, player.getPosition());
             statement_prepared.executeUpdate();
+            
+            statement_prepared.close(); 
         }
         
         db_connection.close();
+        
+//        statement.executeUpdate("CREATE TABLE player ("
+//                            + "idpk INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,"
+//                            + "id TEXT NOT NULL,"
+//                            + "name TEXT NOT NULL,"
+//                            + "team TEXT NOT NULL,"
+//                            + "position TEXT NOT NULL,"
+//                            + "FOREIGN KEY (team) REFERENCES team(idpk));");
     }
 }
