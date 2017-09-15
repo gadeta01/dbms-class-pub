@@ -3,15 +3,22 @@ package mlb;
  * @author Roman Yasinovskyy
  */
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.ArrayList;
 @JsonIgnoreProperties(ignoreUnknown = true)
 
 public class Team {
     // TODO: Use JsonProperty correctly
+    //id, abbreviation, name, conference, and division.
+    @JsonProperty("id")
     private final String id;
+    @JsonProperty("abbreviation")
     private final String abbreviation;
+    @JsonProperty("name")
     private final String name;
+    @JsonProperty("conference")
     private final String conference;
+    @JsonProperty("division")
     private final String division;
     private ArrayList<Player> roster;
     private Address address;
@@ -118,6 +125,21 @@ public class Team {
     @Override
     public String toString() {
         // TODO: Implement this method
-        throw new UnsupportedOperationException();
+        //String expResult = "Luther Norse\n"
+//        + "IIAC | NCAA, Division 3\n"
+//        + "Baseball Field\n"
+//        + "700 College Dr\n"
+//        + "Decorah, IA 52101\n"
+//        + "563-387-2000\n"
+//        + "luther.edu\n"
+//        + "Roster size: 2";
+        return this.name + "\n" +
+               this.conference + " | " + this.division + "\n" +
+               this.address.getSite() + "\n" +
+               this.address.getStreet() + "\n" + 
+               this.address.getCity() + ", " + this.address.getState() + " " + this.address.getZip() + "\n" +
+               this.address.getPhone() + "\n" +
+               this.address.getUrl() + "\n" + 
+               "Roster size: " + Integer.toString(this.roster.size()); 
     }
 }

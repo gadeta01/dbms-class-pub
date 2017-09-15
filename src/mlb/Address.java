@@ -82,6 +82,7 @@ public class Address {
     @Override
     public String toString() {
         // TODO: Implement this method
-        throw new UnsupportedOperationException();
+        return this.site + "\n" + this.street + "\n" + this.city + ", " + this.state + " " + this.zip + 
+                "\n" + this.phone + "\n" + this.url; 
     }
 }
