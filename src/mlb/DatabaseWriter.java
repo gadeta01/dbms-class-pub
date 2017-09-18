@@ -41,6 +41,8 @@ public class DatabaseWriter {
             jsonParser.nextToken();
             while (jsonParser.nextToken() == JsonToken.START_OBJECT) {
                 Team team = mapper.readValue(jsonParser, Team.class);
+                byte[] thisLogo = readLogoFile("images/mlb_logo_" + team.getAbbreviation() + ".jpg"); 
+                team.setLogo(thisLogo);
                 league.add(team);
             }
             jsonParser.close();
@@ -78,10 +80,12 @@ public class DatabaseWriter {
         ArrayList<Player> roster = new ArrayList<>();
         try {
             CSVReader reader = new CSVReader(new FileReader(filename));
-            String [] nextLine = reader.readNext();
+            String [] nextLine; 
+            reader.readNext();
             while ((nextLine = reader.readNext()) != null) {
                // nextLine[] is an array of values from the line
-               Player aPlayer = new Player(nextLine[0], nextLine[1], nextLine[2], nextLine[3]); 
+               Player aPlayer = new Player(nextLine[0], nextLine[1], nextLine[4], nextLine[2]); 
+               //Player aPlayer = new Player(nextLine[0], nextLine[1], nextLine[2], nextLine[3]); 
                roster.add(aPlayer);
             }
         }
@@ -193,6 +197,7 @@ public class DatabaseWriter {
     public void writeAddressTable(String db_filename, ArrayList<Address> addressBook) throws SQLException {
         Connection db_connection = DriverManager.getConnection(SQLITEDBPATH + db_filename);
         db_connection.createStatement().execute("PRAGMA foreign_keys = ON;");
+        try {
         for (Address address: addressBook) {
             // TODO: Write an SQL statement to insert a new address into a table
             //Get team id 
@@ -201,7 +206,7 @@ public class DatabaseWriter {
             Statement statement = db_connection.createStatement();
             ResultSet results = statement.executeQuery("SELECT idpk FROM team WHERE team.name= '" + address.getTeam() + "';");
             int team_id = results.getInt(1); 
-            statement.close();
+            //statement.close();
             
             String sql = "INSERT INTO address(team, site, street, city, state, zip, phone, url) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
             PreparedStatement statement_prepared = db_connection.prepareStatement(sql);
@@ -219,6 +224,10 @@ public class DatabaseWriter {
             statement_prepared.executeUpdate();
             statement_prepared.close();
         }
+        }
+        catch (Exception e) {
+            System.err.print(e); 
+        }
         
         db_connection.close();
     }
@@ -230,13 +239,14 @@ public class DatabaseWriter {
     public void writePlayerTable(String db_filename, ArrayList<Player> roster) throws SQLException {
         Connection db_connection = DriverManager.getConnection(SQLITEDBPATH + db_filename);
         db_connection.createStatement().execute("PRAGMA foreign_keys = ON;");
+        int myInt = 0; 
         for (Player player: roster) {
             // TODO: Write an SQL statement to insert a new player into a table
             //Find team fk
             Statement statement = db_connection.createStatement();
             ResultSet results = statement.executeQuery("SELECT idpk FROM team WHERE team.name= '" + player.getTeam() + "';");
             int team_id = results.getInt(1); 
-            statement.close();
+            //statement.close();
            
             String sql = "INSERT INTO player(id, name, team, position) VALUES (?, ?, ?, ?);";
             PreparedStatement statement_prepared = db_connection.prepareStatement(sql);
@@ -246,8 +256,9 @@ public class DatabaseWriter {
             statement_prepared.setInt(3, team_id);
             statement_prepared.setString(4, player.getPosition());
             statement_prepared.executeUpdate();
-            
-            statement_prepared.close(); 
+
+            myInt ++; 
+            System.out.println(myInt);
         }
         
         db_connection.close();

@@ -10,11 +10,11 @@ import java.util.ArrayList;
 public class Team {
     // TODO: Use JsonProperty correctly
     //id, abbreviation, name, conference, and division.
-    @JsonProperty("id")
+    @JsonProperty("team_id")
     private final String id;
     @JsonProperty("abbreviation")
     private final String abbreviation;
-    @JsonProperty("name")
+    @JsonProperty("full_name")
     private final String name;
     @JsonProperty("conference")
     private final String conference;
